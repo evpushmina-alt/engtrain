@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>English Trainer — упражнения по уровням</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: system-ui, 'Segoe UI', 'Roboto', sans-serif;
+        }
+        body {
+            background: #f0f4f8;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 32px;
+            padding: 24px 28px;
+            box-shadow: 0 20px 35px -12px rgba(0,0,0,0.15);
+        }
+        h1 {
+            font-size: 1.9rem;
+            margin: 0 0 6px 0;
+            color: #0f2b3d;
+        }
+        .sub {
+            color: #2c5a6e;
+            border-left: 4px solid #3b82f6;
+            padding-left: 16px;
+            margin-bottom: 24px;
+        }
+        .mode-tabs {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 8px;
+        }
+        .mode-btn {
+            background: none;
+            border: none;
+            font-size: 1rem;
+            font-weight: 600;
+            padding: 8px 24px;
+            border-radius: 40px;
+            cursor: pointer;
+            color: #1e293b;
+            transition: all 0.2s;
+        }
+        .mode-btn.active {
+            background: #3b82f6;
+            color: white;
+            box-shadow: 0 4px 8px rgba(59,130,246,0.3);
+        }
+        .panel {
+            display: none;
+            margin-bottom: 30px;
+        }
+        .panel.active {
+            display: block;
+        }
+        label {
+            font-weight: 600;
+            display: block;
+            margin-top: 14px;
+            margin-bottom: 6px;
+            color: #0c4a6e;
+        }
+        textarea, select, input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 16px;
+            border: 1px solid #cbd5e1;
+            font-size: 0.95rem;
+            background: white;
+        }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-weight: 600;
+            border-radius: 40px;
+            cursor: pointer;
+            margin-top: 12px;
+            font-size: 0.9rem;
+            transition: 0.2s;
+        }
+        button:hover {
+            background: #2563eb;
+            transform: scale(0.98);
+        }
+        .word-badge {
+            background: #e0f2fe;
+            padding: 6px 16px;
+            border-radius: 40px;
+            font-weight: 500;
+            display: inline-block;
+            margin: 5px 8px 5px 0;
+        }
+        .words-bar {
+            background: #f8fafc;
+            border-radius: 24px;
+            padding: 14px;
+            margin: 16px 0;
+        }
+        .exercise-card {
+            background: #ffffff;
+            border-radius: 24px;
+            padding: 18px 22px;
+            margin-bottom: 28px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border: 1px solid #eef2ff;
+        }
+        .exercise-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: #1e3a8a;
+        }
+        .context-item, .trans-item, .cloze-item {
+            background: #f9f9ff;
+            margin: 14px 0;
+            padding: 14px;
+            border-radius: 20px;
+        }
+        .match-area {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 24px;
+        }
+        .match-col {
+            flex: 1;
+            background: #f1f5f9;
+            border-radius: 20px;
+            padding: 12px;
+        }
+        .match-word {
+            background: white;
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 60px;
+            cursor: pointer;
+            text-align: center;
+            border: 1px solid #cbd5e1;
+            transition: 0.1s;
+        }
+        .match-word.selected {
+            background: #bbf0ff;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px #3b82f6;
+        }
+        .feedback-good {
+            color: #15803d;
+            font-weight: bold;
+        }
+        hr {
+            margin: 20px 0;
+        }
+        .flex-row {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        @media (max-width: 700px) {
+            .container { padding: 16px; }
+            .match-area { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>📘 English Trainer</h1>
+    <div class="sub">Выбери уровень / свой список → количество слов → 4 упражнения</div>
+
+    <div class="mode-tabs">
+        <button class="mode-btn active" data-mode="text">📄 Из текста (скрипт)</button>
+        <button class="mode-btn" data-mode="manual">✍️ Ввести слова вручную</button>
+    </div>
+
+    <!-- Панель текст -->
+    <div id="panel-text" class="panel active">
+        <label>Вставьте текст на английском (диалог, статью)</label>
+        <textarea id="source-text" rows="5" placeholder="Пример: The ubiquitous smartphone has completely changed our daily routines. Many people mitigate stress by meditating..."></textarea>
+        <label>Уровень слов для извлечения:</label>
+        <select id="level-choice">
+            <option value="A1">A1 (самые простые)</option>
+            <option value="A2">A2</option>
+            <option value="B1">B1</option>
+            <option value="B2">B2</option>
+            <option value="C1" selected>C1</option>
+            <option value="C2">C2</option>
+        </select>
+        <button id="extract-words-btn">🔍 Извлечь слова нужного уровня</button>
+    </div>
+
+    <!-- Панель ручной ввод -->
+    <div id="panel-manual" class="panel">
+        <label>Введите слова через запятую или пробел (английские)</label>
+        <textarea id="custom-words-list" rows="3" placeholder="например: ubiquitous, resilience, mitigate, ambiguous, paradigm"></textarea>
+        <button id="use-manual-btn">✅ Использовать эти слова</button>
+    </div>
+
+    <!-- Блок для извлечённых слов + выбор количества -->
+    <div id="words-block" style="display: none;">
+        <div class="words-bar">
+            <div><strong>📌 Найденные / выбранные слова (уровень соответствия):</strong></div>
+            <div id="display-word-badges"></div>
+            <div class="flex-row" style="margin-top: 12px;">
+                <label style="margin:0">Количество слов для упражнений:</label>
+                <select id="word-count-select" style="width: auto;">
+                    <option value="5">5 слов</option>
+                    <option value="8" selected>8 слов</option>
+                    <option value="10">10 слов</option>
+                    <option value="15">15 слов</option>
+                    <option value="all">Все слова</option>
+                </select>
+                <button id="confirm-count-btn">✅ Подтвердить и начать упражнения</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="exercises-area"></div>
+</div>
+
+<script>
+    // ----------------------------- ВСТРОЕННЫЙ СЛОВАРЬ (уровни + перевод + примеры) -----------------------------
+    // Вы можете легко добавить свои слова в этот массив.
+    const dictionary = [
+        { word: "apple", level: "A1", translation: "яблоко", examples: ["She ate an apple for a snack.", "Apple is my favorite fruit."] },
+        { word: "car", level: "A1", translation: "машина", examples: ["He drives a red car.", "The car is very fast."] },
+        { word: "happy", level: "A1", translation: "счастливый", examples: ["She felt happy today.", "They have a happy family."] },
+        { word: "big", level: "A1", translation: "большой", examples: ["This house is big.", "A big elephant appeared."] },
+        { word: "ubiquitous", level: "C1", translation: "вездесущий", examples: ["Smartphones are ubiquitous nowadays.", "Coffee shops have become ubiquitous in the city."] },
+        { word: "mitigate", level: "C1", translation: "смягчать, уменьшать", examples: ["To mitigate the problem, we need new strategies.", "Trees help mitigate climate change."] },
+        { word: "ambiguous", level: "C1", translation: "неоднозначный", examples: ["His reply was ambiguous.", "The ending of the movie is ambiguous."] },
+        { word: "resilience", level: "C1", translation: "устойчивость", examples: ["She showed great resilience.", "Economic resilience is important."] },
+        { word: "paradigm", level: "C1", translation: "парадигма", examples: ["A new paradigm in science.", "This changed the paradigm."] },
+        { word: "elaborate", level: "B2", translation: "разрабатывать; подробный", examples: ["Please elaborate your idea.", "They made elaborate plans."] },
+        { word: "fluctuate", level: "B2", translation: "колебаться", examples: ["Prices fluctuate daily.", "His mood fluctuates often."] },
+        { word: "diligent", level: "B2", translation: "старательный", examples: ["She is a diligent student.", "Diligent work pays off."] },
+        { word: "legitimate", level: "C1", translation: "законный, обоснованный", examples: ["That is a legitimate concern.", "He has a legitimate reason."] },
+        { word: "quantify", level: "C1", translation: "количественно оценить", examples: ["It's hard to quantify happiness.", "We need to quantify the results."] },
+        { word: "subtle", level: "C1", translation: "тонкий, незаметный", examples: ["There is a subtle difference.", "Her smile was subtle."] },
+        { word: "abandon", level: "B2", translation: "покидать, оставлять", examples: ["They had to abandon the ship.", "Don't abandon your dreams."] },
+        { word: "house", level: "A1", translation: "дом", examples: ["My house is near the park.", "They built a new house."] },
+        { word: "quickly", level: "A2", translation: "быстро", examples: ["He ran quickly.", "Please finish quickly."] }
+    ];
+
+    // Дополнительные слова для реального удобства (добавим несколько C1) – сливаем вместе
+    const extraC1 = [
+        { word: "notable", level: "C1", translation: "заметный", examples: ["A notable achievement.", "He is a notable figure."] },
+        { word: "obscure", level: "C1", translation: "неясный, малоизвестный", examples: ["An obscure artist.", "His motives are obscure."] },
+        { word: "transparent", level: "C1", translation: "прозрачный", examples: ["The water is transparent.", "Transparent communication."] }
+    ];
+    dictionary.push(...extraC1);
+
+    // Вспомогательные функции
+    function getWordData(word) {
+        const lower = word.toLowerCase();
+        return dictionary.find(entry => entry.word.toLowerCase() === lower);
+    }
+
+    // Извлечение слов из текста с фильтром по уровню
+    function extractWordsFromText(text, targetLevel) {
+        const words = text.toLowerCase().match(/\b[a-z]{3,}\b/g) || [];
+        const uniqueWords = [...new Set(words)];
+        const filtered = uniqueWords.filter(w => {
+            const data = getWordData(w);
+            return data && data.level === targetLevel;
+        });
+        return filtered;
+    }
+
+    let currentWordsList = [];      // массив слов (оригинальный регистр пока нижний, но будем брать из словаря)
+    let currentWordObjects = [];    // объекты слов {word, translation, examples}
+
+    // отображение бейджей
+    function renderWordBadges(wordsArr) {
+        const container = document.getElementById('display-word-badges');
+        if (!container) return;
+        container.innerHTML = wordsArr.map(w => `<span class="word-badge">${w}</span>`).join('');
+    }
+
+    // событие после того, как получили список слов (из текста или ручной)
+    function onWordsReady(rawWords) {
+        // rawWords - массив строк (слова)
+        const unique = [...new Set(rawWords.map(w => w.toLowerCase()))];
+        const validObjects = [];
+        for (let w of unique) {
+            const data = getWordData(w);
+            if (data) {
+                validObjects.push({ word: data.word, translation: data.translation, examples: data.examples.slice() });
+            } else {
+                // если слова нет в словаре – создаём заглушку с пустым примером
+                validObjects.push({ word: w, translation: '???', examples: ['Пример отсутствует, добавьте слово в словарь.'] });
+            }
+        }
+        if (validObjects.length === 0) {
+            alert('Нет слов выбранного уровня. Попробуйте другой уровень или добавьте слова в словарь.');
+            return;
+        }
+        currentWordObjects = validObjects;
+        currentWordsList = validObjects.map(o => o.word);
+        renderWordBadges(currentWordsList);
+        document.getElementById('words-block').style.display = 'block';
+        document.getElementById('exercises-area').innerHTML = ''; // очистить старые упражнения
+        // установить дефолтное значение количества
+        const countSelect = document.getElementById('word-count-select');
+        const maxCount = currentWordsList.length;
+        // обновить опции, если нужно
+        while(countSelect.options.length > 0) countSelect.remove(0);
+        const counts = [3,5,8,10,15];
+        for(let c of counts) {
+            if(c <= maxCount) countSelect.add(new Option(`${c} слов`, c));
+        }
+        countSelect.add(new Option(`Все (${maxCount})`, 'all'));
+        countSelect.value = maxCount >= 8 ? '8' : (maxCount >= 5 ? '5' : 'all');
+    }
+
+    // Генерация 4 упражнений для выбранных слов (limit количество)
+    function generateExercises(limit) {
+        let selected = [...currentWordObjects];
+        if (limit !== 'all' && typeof limit === 'number') {
+            selected = selected.slice(0, limit);
+        }
+        if (selected.length === 0) return;
+        const area = document.getElementById('exercises-area');
+        area.innerHTML = '';
+
+        // ---------- Упражнение 1: контекстная догадка ----------
+        let ex1Html = `<div class="exercise-card"><div class="exercise-title">🔎 1. Догадайся о значении слова из контекста</div>`;
+        selected.forEach((item, idx) => {
+            const ex = item.examples[0] || "Нет примера.";
+            ex1Html += `<div class="context-item"><strong>📖 Контекст:</strong> "${ex}"<br>
+            <strong>Слово:</strong> <em>${item.word}</em><br>
+            <input type="text" id="guess_${idx}" placeholder="Введите перевод или значение..." style="width: 70%; margin-top:6px;">
+            <button class="check-guess-btn" data-word="${item.word}" data-idx="${idx}">Проверить</button>
+            <span id="guess_fb_${idx}" style="margin-left:12px;"></span></div>`;
+        });
+        ex1Html += `</div><hr>`;
+        area.insertAdjacentHTML('beforeend', ex1Html);
+
+        // ---------- Упражнение 2: соединить пары (кликабельные списки) ----------
+        let ex2Html = `<div class="exercise-card"><div class="exercise-title">🔗 2. Соедини слово с переводом</div>
+        <div class="match-area"><div class="match-col"><h4>Английские слова</h4><div id="match-english-list"></div></div>
+        <div class="match-col"><h4>Переводы</h4><div id="match-trans-list"></div></div></div>
+        <div id="match-feedback"></div><button id="check-matches">Проверить пары</button></div><hr>`;
+        area.insertAdjacentHTML('beforeend', ex2Html);
+
+        // заполняем списки для match
+        const engListDiv = document.getElementById('match-english-list');
+        const transListDiv = document.getElementById('match-trans-list');
+        const shuffle = (arr) => arr.sort(() => Math.random() - 0.5);
+        const engWords = selected.map(s => s.word);
+        const transWords = selected.map(s => s.translation);
+        const shuffledTrans = shuffle([...transWords]);
+        engListDiv.innerHTML = '';
+        transListDiv.innerHTML = '';
+        engWords.forEach((w, i) => {
+            const div = document.createElement('div');
+            div.className = 'match-word';
+            div.textContent = w;
+            div.setAttribute('data-eng', w);
+            div.setAttribute('data-trans', transWords[i]);
+            div.addEventListener('click', (e) => {
+                document.querySelectorAll('#match-english-list .match-word').forEach(el => el.classList.remove('selected'));
+                div.classList.add('selected');
+                window.selectedEnglishWord = { word: w, translation: transWords[i] };
+            });
+            engListDiv.appendChild(div);
+        });
+        shuffledTrans.forEach((t, idx) => {
+            const div = document.createElement('div');
+            div.className = 'match-word';
+            div.textContent = t;
+            div.setAttribute('data-trans-text', t);
+            div.addEventListener('click', () => {
+                if (!window.selectedEnglishWord) { alert('Сначала выберите английское слово'); return; }
+                const expectedTrans = window.selectedEnglishWord.translation;
+                if (t === expectedTrans) {
+                    document.getElementById('match-feedback').innerHTML = `<span class="feedback-good">✓ Верно! (${window.selectedEnglishWord.word} → ${t})</span>`;
+                    // опционально удалить или задизейблить
+                    div.style.opacity = '0.5';
+                    div.style.pointerEvents = 'none';
+                    const engDiv = [...document.querySelectorAll('#match-english-list .match-word')].find(el => el.textContent === window.selectedEnglishWord.word);
+                    if(engDiv) engDiv.style.opacity = '0.5'; engDiv.style.pointerEvents = 'none';
+                    window.selectedEnglishWord = null;
+                } else {
+                    document.getElementById('match-feedback').innerHTML = `<span style="color:red;">✗ Неверно: "${window.selectedEnglishWord.word}" переводится как "${expectedTrans}", а вы выбрали "${t}"</span>`;
+                }
+            });
+            transListDiv.appendChild(div);
+        });
+
+        // ---------- Упражнение 3: ручной перевод ----------
+        let ex3Html = `<div class="exercise-card"><div class="exercise-title">✍️ 3. Напиши перевод</div>`;
+        selected.forEach((item, idx) => {
+            ex3Html += `<div class="trans-item"><strong>${item.word}</strong> → <input type="text" id="trans_${idx}" placeholder="Перевод">
+            <button class="check-trans-btn" data-word="${item.word}" data-idx="${idx}">Проверить</button>
+            <span id="trans_fb_${idx}"></span></div>`;
+        });
+        ex3Html += `</div><hr>`;
+        area.insertAdjacentHTML('beforeend', ex3Html);
+
+        // ---------- Упражнение 4: вставить слово в предложение (cloze) ----------
+        let ex4Html = `<div class="exercise-card"><div class="exercise-title">📝 4. Вставь подходящее слово в предложение</div>`;
+        selected.forEach((item, idx) => {
+            const sent = item.examples[0] || "No example";
+            // формируем пропуск: заменяем слово на ______
+            const regex = new RegExp(`\\b${item.word}\\b`, 'i');
+            const clozeSent = sent.replace(regex, '_________');
+            const options = [item.word];
+            // добавим 2 случайных других слова
+            let otherWords = currentWordObjects.filter(o => o.word !== item.word).map(o => o.word);
+            otherWords = otherWords.sort(() => 0.5 - Math.random()).slice(0,2);
+            options.push(...otherWords);
+            const shuffledOpts = options.sort(() => Math.random() - 0.5);
+            let selectHtml = `<select id="cloze_select_${idx}">${shuffledOpts.map(opt => `<option value="${opt}">${opt}</option>`).join('')}</select>`;
+            ex4Html += `<div class="cloze-item">${clozeSent}<br>Выбери слово: ${selectHtml}
+            <button class="check-cloze" data-idx="${idx}" data-correct="${item.word}">Проверить</button>
+            <span id="cloze_fb_${idx}"></span></div>`;
+        });
+        ex4Html += `</div>`;
+        area.insertAdjacentHTML('beforeend', ex4Html);
+
+        // обработчики для упражнений 1 и 3
+        document.querySelectorAll('.check-guess-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const word = btn.getAttribute('data-word');
+                const idx = btn.getAttribute('data-idx');
+                const userVal = document.getElementById(`guess_${idx}`).value.trim().toLowerCase();
+                const correctTrans = getWordData(word)?.translation?.toLowerCase() || '';
+                const fbSpan = document.getElementById(`guess_fb_${idx}`);
+                if (userVal.includes(correctTrans) || correctTrans.includes(userVal)) {
+                    fbSpan.innerHTML = '✅ Верно!';
+                    fbSpan.style.color = 'green';
+                } else {
+                    fbSpan.innerHTML = `❌ Неверно. Правильный перевод: "${correctTrans}"`;
+                    fbSpan.style.color = 'red';
+                }
+            });
+        });
+        document.querySelectorAll('.check-trans-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const word = btn.getAttribute('data-word');
+                const idx = btn.getAttribute('data-idx');
+                const userTrans = document.getElementById(`trans_${idx}`).value.trim().toLowerCase();
+                const correct = getWordData(word)?.translation?.toLowerCase() || '';
+                const fbSpan = document.getElementById(`trans_fb_${idx}`);
+                if (userTrans === correct) fbSpan.innerHTML = '✅ Отлично!';
+                else fbSpan.innerHTML = `❌ Ошибка: правильный перевод "${correct}"`;
+            });
+        });
+        document.querySelectorAll('.check-cloze').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const idx = btn.getAttribute('data-idx');
+                const correct = btn.getAttribute('data-correct');
+                const selectedVal = document.getElementById(`cloze_select_${idx}`).value;
+                const fbSpan = document.getElementById(`cloze_fb_${idx}`);
+                if (selectedVal === correct) fbSpan.innerHTML = '✅ Правильно!';
+                else fbSpan.innerHTML = `❌ Неправильно. Правильное слово: "${correct}"`;
+            });
+        });
+    }
+
+    // Обработка выбора количества и запуск упражнений
+    document.getElementById('confirm-count-btn')?.addEventListener('click', () => {
+        const select = document.getElementById('word-count-select');
+        let limit = select.value;
+        if (limit !== 'all') limit = parseInt(limit, 10);
+        generateExercises(limit);
+    });
+
+    // Извлечение из текста
+    document.getElementById('extract-words-btn')?.addEventListener('click', () => {
+        const text = document.getElementById('source-text').value;
+        if (!text.trim()) { alert('Вставьте текст'); return; }
+        const level = document.getElementById('level-choice').value;
+        const extracted = extractWordsFromText(text, level);
+        if (extracted.length === 0) {
+            alert(`Не найдено слов уровня ${level} в словаре. Попробуйте другой уровень или добавьте слова.`);
+            return;
+        }
+        onWordsReady(extracted);
+    });
+
+    // Ручной ввод слов
+    document.getElementById('use-manual-btn')?.addEventListener('click', () => {
+        let raw = document.getElementById('custom-words-list').value;
+        let words = raw.split(/[ ,\n]+/).filter(w => w.trim().length > 0);
+        if (words.length === 0) { alert('Введите слова'); return; }
+        onWordsReady(words);
+    });
+
+    // Переключение вкладок
+    document.querySelectorAll('.mode-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const mode = btn.getAttribute('data-mode');
+            document.getElementById('panel-text').classList.toggle('active', mode === 'text');
+            document.getElementById('panel-manual').classList.toggle('active', mode === 'manual');
+            document.getElementById('words-block').style.display = 'none';
+            document.getElementById('exercises-area').innerHTML = '';
+        });
+    });
+</script>
+</body>
+</html>
